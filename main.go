@@ -1,36 +1,64 @@
 package main
 
 import (
-	"fmt"
-	"io"
+	"context"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"time"
+
+	"github.com/abhiraj-ku/micro_serGO/handler"
 )
 
 func main() {
-	// reqeusts to the path /goodbye with be handled by this function
-	http.HandleFunc("/goodbye", func(http.ResponseWriter, *http.Request) {
-		log.Println("Goodbye World")
-	})
+	l := log.New(os.Stdout, "products-api: ", log.LstdFlags)
+	mux := http.NewServeMux()
 
-	// any other request will be handled by this function
-	http.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
-		log.Println("Running Hello Handler")
+	hh := handler.NewHello(l)
+	sg := handler.NewGoodBye(l)
+	mux.Handle("/", hh)
+	mux.Handle("/goodbye", sg)
 
-		// read the body
-		b, err := io.ReadAll(r.Body)
+	// err := http.ListenAndServe(":9090", mux)
+	// log.Fatal(err)
+
+	// custom server in golang
+	log.Println("Server is up and running...")
+	s := &http.Server{
+		Addr:         ":9090",
+		Handler:      mux,
+		IdleTimeout:  120 * time.Second,
+		ReadTimeout:  1 * time.Second,
+		WriteTimeout: 1 * time.Second,
+	}
+
+	// err := s.ListenAndServe()
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	go func() {
+		l.Println("starting the server on port 9090...")
+		err := s.ListenAndServe()
 		if err != nil {
-			log.Println("Error reading body", err)
-
-			http.Error(rw, "Unable to read request body", http.StatusBadRequest)
-			return
+			l.Printf("Error starting server: %s\n", err)
+			os.Exit(1)
 		}
 
-		// write the response
-		fmt.Fprintf(rw, "Hello %s", b)
-	})
+	}()
+	// Graceful shutdown
 
-	log.Println("Starting Server")
-	err := http.ListenAndServe(":9090", nil)
-	log.Fatal(err)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Kill)
+	// block until a signal is recieved
+
+	sig := <-c
+	log.Println("Got signal", sig)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	s.Shutdown(ctx)
+
 }
