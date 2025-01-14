@@ -15,10 +15,9 @@ func main() {
 	l := log.New(os.Stdout, "products-api: ", log.LstdFlags)
 	mux := http.NewServeMux()
 
-	hh := handler.NewHello(l)
-	sg := handler.NewGoodBye(l)
-	mux.Handle("/", hh)
-	mux.Handle("/goodbye", sg)
+	hp := handler.NewProduct(l)
+
+	mux.Handle("/", hp)
 
 	// err := http.ListenAndServe(":9090", mux)
 	// log.Fatal(err)
