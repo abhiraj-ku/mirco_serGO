@@ -3,6 +3,7 @@ package data
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"time"
 )
 
@@ -39,11 +40,34 @@ var productList = []*Product{
 
 type Products []*Product
 
+// Encode the objects to json (marshal the data)
 func (p *Products) ToJSON(w io.Writer) error {
 	e := json.NewEncoder(w)
 	return e.Encode(p)
 }
 
+// Decode the json from body to go's Object (struct) (unmarshal the data)
+func (p *Product) FromJSON(r io.Reader) error {
+	dec := json.NewDecoder(r)
+	if err := dec.Decode(p); err != nil {
+		log.Fatal(err)
+
+	}
+	return nil
+}
+
 func GetProducts() Products {
 	return productList
+}
+
+func getNextID() int {
+	lp := productList[len(productList)-1]
+
+	return lp.ID + 1
+}
+func AddProduct(p *Product) {
+	p.ID = getNextID()
+
+	productList = append(productList, p)
+
 }

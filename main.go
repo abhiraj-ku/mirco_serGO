@@ -15,7 +15,7 @@ func main() {
 	l := log.New(os.Stdout, "products-api: ", log.LstdFlags)
 	mux := http.NewServeMux()
 
-	hp := handler.NewProduct(l)
+	hp := handler.NewProducts(l)
 
 	mux.Handle("/", hp)
 
