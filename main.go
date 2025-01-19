@@ -9,15 +9,21 @@ import (
 	"time"
 
 	"github.com/abhiraj-ku/micro_serGO/handler"
+	"github.com/gorilla/mux"
 )
 
 func main() {
 	l := log.New(os.Stdout, "products-api: ", log.LstdFlags)
-	mux := http.NewServeMux()
-
 	hp := handler.NewProducts(l)
+	mux := mux.NewRouter()
 
-	mux.Handle("/", hp)
+	getRouter := mux.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc("/", hp.GetProducts)
+
+	putRouter := mux.Methods("PUT").Subrouter()
+	putRouter.HandleFunc("/{id:[0-9]+}", hp.UpdateProducts)
+
+	// mux.Handle("/", hp)
 
 	// err := http.ListenAndServe(":9090", mux)
 	// log.Fatal(err)

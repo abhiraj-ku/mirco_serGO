@@ -3,8 +3,6 @@ package handler
 import (
 	"log"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"github.com/abhiraj-ku/micro_serGO/data"
 )
@@ -18,72 +16,72 @@ func NewProducts(l *log.Logger) *Products {
 	return &Products{l}
 }
 
-func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		p.getProducts(rw, r)
-		return
-	}
-	if r.Method == http.MethodPost {
-		p.addProduct(rw, r)
-		return
-	}
+// func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
+// 	if r.Method == http.MethodGet {
+// 		p.getProducts(rw, r)
+// 		return
+// 	}
+// 	if r.Method == http.MethodPost {
+// 		p.addProduct(rw, r)
+// 		return
+// 	}
 
-	// PUT -> request
-	if r.Method == http.MethodPut {
-		p.l.Println("PUT :", r.URL.Path)
+// 	// PUT -> request
+// 	if r.Method == http.MethodPut {
+// 		p.l.Println("PUT :", r.URL.Path)
 
-		// //expect the id in the URI
-		// reg := regexp.MustCompile(`/([0-9]+)`)
-		// g := reg.FindAllStringSubmatch(r.URL.Path, -1)
+// 		// //expect the id in the URI
+// 		// reg := regexp.MustCompile(`/([0-9]+)`)
+// 		// g := reg.FindAllStringSubmatch(r.URL.Path, -1)
 
-		// if len(g) != 1 {
-		// 	p.l.Println("Invalid URI more than one id")
-		// 	http.Error(rw, "Invalid URI", http.StatusBadRequest)
-		// 	return
-		// }
+// 		// if len(g) != 1 {
+// 		// 	p.l.Println("Invalid URI more than one id")
+// 		// 	http.Error(rw, "Invalid URI", http.StatusBadRequest)
+// 		// 	return
+// 		// }
 
-		// if len(g[0]) != 2 {
-		// 	p.l.Println("Invalid URI more than one id")
-		// 	http.Error(rw, "Invalid URI", http.StatusBadRequest)
-		// 	return
-		// }
+// 		// if len(g[0]) != 2 {
+// 		// 	p.l.Println("Invalid URI more than one id")
+// 		// 	http.Error(rw, "Invalid URI", http.StatusBadRequest)
+// 		// 	return
+// 		// }
 
-		// idString, err := strconv.ParseInt(g[0][1], 10, 0)
-		// if err != nil {
-		// 	http.Error(rw, "Error converting idString to int", http.StatusBadRequest)
-		// 	return
-		// }
+// 		// idString, err := strconv.ParseInt(g[0][1], 10, 0)
+// 		// if err != nil {
+// 		// 	http.Error(rw, "Error converting idString to int", http.StatusBadRequest)
+// 		// 	return
+// 		// }
 
-		// fmt.Println("ID :", idString)\
+// 		// fmt.Println("ID :", idString)\
 
-		// Simpler method to parse ID params from url Path
+// 		// Simpler method to parse ID params from url Path
 
-		urlParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
-		if len(urlParts) != 1 {
-			p.l.Println("Cannot parse URL path ,Invalid URl")
-			http.Error(rw, "Invalid URL", http.StatusBadRequest)
-			return
-		}
-		id, err := strconv.Atoi(urlParts[0])
-		if err != nil {
-			p.l.Println("Cannot parse URL path ,Invalid URl")
-			http.Error(rw, "Invalid ID", http.StatusBadRequest)
-			return
-		}
+// 		urlParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+// 		if len(urlParts) != 1 {
+// 			p.l.Println("Cannot parse URL path ,Invalid URl")
+// 			http.Error(rw, "Invalid URL", http.StatusBadRequest)
+// 			return
+// 		}
+// 		id, err := strconv.Atoi(urlParts[0])
+// 		if err != nil {
+// 			p.l.Println("Cannot parse URL path ,Invalid URl")
+// 			http.Error(rw, "Invalid ID", http.StatusBadRequest)
+// 			return
+// 		}
 
-		p.updateProducts(id, rw, r)
-		return
+// 		p.updateProducts(id, rw, r)
+// 		return
 
-	}
+// 	}
 
-	//catch if no method satisfies the GET
-	rw.WriteHeader(http.StatusMethodNotAllowed)
+// 	//catch if no method satisfies the GET
+// 	rw.WriteHeader(http.StatusMethodNotAllowed)
 
-}
+// }
 
 // getProducts returns the products from the data store
 
-func (p *Products) getProducts(rw http.ResponseWriter, r *http.Request) {
+func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle GET products")
 	productList := data.GetProducts()
 
@@ -114,7 +112,7 @@ func (p *Products) addProduct(rw http.ResponseWriter, r *http.Request) {
 
 // PUT ->updateProducts
 
-func (p *Products) updateProducts(id int, rw http.ResponseWriter, r *http.Request) {
+func (p *Products) UpdateProducts(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle PUT products")
 
 	prod := &data.Product{}
