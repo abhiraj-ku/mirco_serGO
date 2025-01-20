@@ -20,8 +20,13 @@ func main() {
 	getRouter := mux.Methods(http.MethodGet).Subrouter()
 	getRouter.HandleFunc("/", hp.GetProducts)
 
+	// POST ->
+	postRouter := mux.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/add", hp.AddProduct)
+
 	putRouter := mux.Methods("PUT").Subrouter()
 	putRouter.HandleFunc("/{id:[0-9]+}", hp.UpdateProducts)
+	putRouter.Use(hp.ValidateInput)
 
 	// mux.Handle("/", hp)
 

@@ -3,8 +3,10 @@ package handler
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/abhiraj-ku/micro_serGO/data"
+	"github.com/gorilla/mux"
 )
 
 type Products struct {
@@ -94,7 +96,7 @@ func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 }
 
 // POST ->addProduct
-func (p *Products) addProduct(rw http.ResponseWriter, r *http.Request) {
+func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle POST products")
 
 	prod := &data.Product{}
@@ -114,10 +116,16 @@ func (p *Products) addProduct(rw http.ResponseWriter, r *http.Request) {
 
 func (p *Products) UpdateProducts(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle PUT products")
+	p.l.Println("Handle PUT products")
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(rw, "Unable to convert id", http.StatusBadRequest)
+	}
 
 	prod := &data.Product{}
 
-	err := prod.FromJSON(r.Body)
+	err = prod.FromJSON(r.Body)
 	if err != nil {
 		p.l.Printf("Error decoding JSON: %v", err)
 		http.Error(rw, "Unable to unmarshal json data to object", http.StatusBadRequest)
@@ -134,4 +142,26 @@ func (p *Products) UpdateProducts(rw http.ResponseWriter, r *http.Request) {
 		return
 
 	}
+}
+
+// Middleware to parse json and vice versa
+type KeyProduct struct{}
+
+func (p *Products) ValidateInput(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+
+		prod := &data.Product{}
+		err := prod.FromJSON(r.Body)
+		if err != nil {
+			p.l.Printf("Error decoding JSON: %v", err)
+			http.Error(rw, "Unable to unmarshal json data to object", http.StatusBadRequest)
+			return
+		}
+
+		// TODO: Fix this WithValue error here.
+		ctx := r.Context().W(KeyProduct{}, prod)
+		req := r.WithContext(ctx)
+
+		next.ServeHTTP(rw, req)
+	})
 }
