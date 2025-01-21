@@ -5,18 +5,43 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"regexp"
 	"time"
+
+	"github.com/go-playground/validator/v10"
 )
 
 type Product struct {
 	ID          int     `json:"id"`
-	Name        string  `json:"name"`
+	Name        string  `json:"name" validate:"required"`
 	Description string  `json:"description"`
-	Price       float32 `json:"price"`
-	SKU         string  `json:"sku"`
+	Price       float32 `json:"price" validate:"gt=0"`
+	SKU         string  `json:"sku" validate:"required,sku"`
 	CreatedOn   string  `json:"createdOn"`
 	UpdatedOn   string  `json:"-"`
-	DeletedOn   string  `json:"-"`
+}
+
+// Validator function
+func (p *Product) Validate() error {
+	validate := validator.New()
+
+	// custom function (here sku check)
+	validate.RegisterValidation("sku", validateSKU)
+	return validate.Struct(p)
+}
+
+// custom validator func for SKU
+func validateSKU(fl validator.FieldLevel) bool {
+	re := regexp.MustCompile(`[a-z]+-[a-z]+-[a-z]+-`)
+	validSKUs := re.FindAllString(fl.Field().String(), -1)
+
+	//TODO: Fix the "sku" tag test custom validator message failed
+	if len(validSKUs) != 1 {
+		return false
+	}
+
+	return true
+
 }
 
 var productList = []*Product{

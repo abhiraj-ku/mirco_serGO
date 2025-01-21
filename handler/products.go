@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"strconv"
@@ -99,7 +100,7 @@ func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle POST products")
 
-	prod := &data.Product{}
+	prod := r.Context().Value(KeyProduct{}).(data.Product)
 
 	err := prod.FromJSON(r.Body)
 	if err != nil {
@@ -109,21 +110,21 @@ func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	// p.l.Printf("Product: %#v", prod)
-	data.AddProduct(prod)
+	data.AddProduct(&prod)
 }
 
 // PUT ->updateProducts
 
 func (p *Products) UpdateProducts(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle PUT products")
-	p.l.Println("Handle PUT products")
+
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		http.Error(rw, "Unable to convert id", http.StatusBadRequest)
 	}
 
-	prod := &data.Product{}
+	prod := r.Context().Value(KeyProduct{}).(data.Product)
 
 	err = prod.FromJSON(r.Body)
 	if err != nil {
@@ -132,7 +133,7 @@ func (p *Products) UpdateProducts(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Update the productList
-	err = data.UpdateProduct(id, prod)
+	err = data.UpdateProduct(id, &prod)
 	if err == data.ErrProductNotFound {
 		http.Error(rw, "Product not found for update", http.StatusNotFound)
 		return
@@ -158,8 +159,7 @@ func (p *Products) ValidateInput(next http.Handler) http.Handler {
 			return
 		}
 
-		// TODO: Fix this WithValue error here.
-		ctx := r.Context().W(KeyProduct{}, prod)
+		ctx := context.WithValue(r.Context(), KeyProduct{}, prod)
 		req := r.WithContext(ctx)
 
 		next.ServeHTTP(rw, req)
