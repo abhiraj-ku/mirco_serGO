@@ -9,6 +9,8 @@ type GoodBye struct {
 	l *log.Logger
 }
 
+// This is temp handler for demo purpose
+
 func NewGoodBye(l *log.Logger) *GoodBye {
 	return &GoodBye{l}
 }

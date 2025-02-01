@@ -110,14 +110,36 @@ func findProd(id int) (*Product, int, error) {
 	}
 	return nil, -1, ErrProductNotFound
 }
-
-func UpdateProduct(id int, p *Product) error {
-	_, indx, err := findProd(id)
-	if err != nil {
-		return fmt.Errorf("product update failed: %w", err)
+func UpdateProduct(p Product) error {
+	i := findProdById(p.ID)
+	if i == -1 {
+		return ErrProductNotFound
 	}
-	p.ID = id
-	productList[indx] = p
-	return nil
 
+	// update the product in the DB
+	productList[i] = &p
+
+	return nil
+}
+
+func DeleteProduct(id int) error {
+	i := findProdById(id)
+	if i == -1 {
+		return ErrProductNotFound
+	}
+
+	productList = append(productList[:i], productList[i+1])
+
+	return nil
+}
+
+// find index by prod id
+
+func findProdById(id int) int {
+	for i, p := range productList {
+		if p.ID == id {
+			return i
+		}
+	}
+	return -1
 }
