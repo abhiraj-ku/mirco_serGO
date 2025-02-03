@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/abhiraj-ku/micro_serGO/handler"
+	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -28,6 +29,9 @@ func main() {
 	putRouter.HandleFunc("/{id:[0-9]+}", hp.UpdateProducts)
 	putRouter.Use(hp.ValidateInput)
 
+	// CORS header
+	ch := gohandlers.CORS(gohandlers.AllowedOrigins([]string{"http://hellobunny.com:3000"}))
+
 	// mux.Handle("/", hp)
 
 	// err := http.ListenAndServe(":9090", mux)
@@ -37,7 +41,7 @@ func main() {
 	log.Println("Server is up and running...")
 	s := &http.Server{
 		Addr:         ":9090",
-		Handler:      mux,
+		Handler:      ch(mux),
 		IdleTimeout:  120 * time.Second,
 		ReadTimeout:  1 * time.Second,
 		WriteTimeout: 1 * time.Second,
