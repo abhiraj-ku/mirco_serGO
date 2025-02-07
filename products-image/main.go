@@ -11,9 +11,13 @@ import (
 	"github.com/abhiraj-ku/micro_serGO/files"
 	"github.com/abhiraj-ku/micro_serGO/handlers"
 	"github.com/gorilla/mux"
+	"github.com/nicholasjackson/env"
 )
 
+var basePath = env.String("BASE_PATH", false, "./imagestore", "Base path to save images")
+
 func main() {
+	env.Parse()
 	log.Println("This is products image service")
 
 	mux := mux.NewRouter()
@@ -25,7 +29,7 @@ func main() {
 		os.Exit(1)
 	}
 	// Create the handler for storage
-	fh := handlers.NewFile(stor, log.Logger)
+	fh := handlers.NewFiles(stor, l)
 
 	// filename regex: {filename:[a-zA-Z]+\\.[a-z]{3}}
 	// problem with FileServer is that it is dumb
