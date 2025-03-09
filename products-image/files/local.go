@@ -16,6 +16,11 @@ type Local struct {
 	basePath    string
 }
 
+// save implements Storage.
+// func (l *Local) save(path string, file io.Reader) error {
+// 	panic("unimplemented")
+// }
+
 // NewLocal creates a new local filesystem with given basePath
 // basePath is the base directory to save files to
 // maxSize is the max number of bytes that a file can be
@@ -35,9 +40,9 @@ func (l *Local) Save(path string, contents io.Reader) error {
 
 	// get the dir & make sure it exists
 	dir := filepath.Dir(fp)
-	err := os.Mkdir(dir, os.ModePerm)
+	err := os.Mkdir(dir, 0644)
 	if err != nil {
-		return xerrors.Errorf("unable to create directory : %w", err)
+		return xerrors.Errorf("unable to create directory[files/local.go] : %w", err)
 	}
 
 	// if the file exists just delete it

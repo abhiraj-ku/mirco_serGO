@@ -11,14 +11,26 @@ import (
 	"github.com/abhiraj-ku/micro_serGO/files"
 	"github.com/abhiraj-ku/micro_serGO/handlers"
 	"github.com/gorilla/mux"
+	"github.com/hashicorp/go-hclog"
 	"github.com/nicholasjackson/env"
 )
 
 var basePath = env.String("BASE_PATH", false, "./imagestore", "Base path to save images")
+var logLevel = env.String("LOG_LEVEL", false, "debug", "Log output level for the server [debug, info, trace]")
 
 func main() {
 	env.Parse()
 	log.Println("This is products image service")
+
+	l := hclog.New(
+		&hclog.LoggerOptions{
+			Name:  "product-images",
+			Level: hclog.LevelFromString(*logLevel),
+		},
+	)
+
+	// create a logger for the server from the default logger
+	sl := l.StandardLogger(&hclog.StandardLoggerOptions{InferLevels: true})
 
 	mux := mux.NewRouter()
 
@@ -47,6 +59,7 @@ func main() {
 	server := http.Server{
 		Addr:         ":4040",
 		Handler:      mux,
+		ErrorLog:     sl,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
 		IdleTimeout:  5 * time.Second,
